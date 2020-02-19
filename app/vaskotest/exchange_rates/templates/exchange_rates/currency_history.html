@@ -1,0 +1,47 @@
+{% extends 'exchange_rates/base.html' %}
+
+
+{% block title %}
+    History of {{ slug }}
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-5" align="center">{{ slug }} history:</h1>
+
+<table class="table table-striped table-sm">
+
+    <thead>
+    <tr align="center">
+        <th scope="col">Start date</th>
+        <th scope="col">End date</th>
+        <th scope="col">Purchase</th>
+        <th scope="col">Selling</th>
+        <th scope="col">Action</th>
+    </tr>
+    </thead>
+
+    {% for record in records %}
+
+    <tbody>
+    <tr align="center">
+        <td>{{ record.start_date | date:"d.m.Y" }}</td>
+        <td>{% if record.end_date %}{{ record.end_date | date:"d.m.Y" }}{% else %}-{% endif %}</td>
+        <td>{{ record.purchase }}</td>
+        <td>{{ record.selling }}</td>
+        <td>
+            <form action="/exchange_rates/delete/{{ slug }}/{{ record.start_date | date:'Y-m-d' }}/" method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn-outline-secondary">Delete record</button>
+            </form>
+        </td>
+    </tr>
+    </tbody>
+
+    {% endfor %}
+
+</table>
+
+{% endblock%}
+
+

@@ -1,0 +1,51 @@
+{% extends 'exchange_rates/base.html' %}
+
+
+{% block title %}
+    Create form
+{% endblock %}
+
+{% block content %}
+
+<form action="{% url 'currency_create_url' %}" method="post">
+    {% csrf_token %}
+
+    {% for field in form %}
+    <div class="form-group col-6 offset-md-3">
+
+        {% if field.errors %}
+
+        <div class="alert alert-danger">
+            {{ field.errors }}
+        </div>
+
+        {% endif %}
+
+        {{ field.label }}
+        {{ field }}
+
+    </div>
+
+    {% endfor %}
+
+    {% if form.non_field_errors %}
+
+    <div class="alert alert-danger">
+        <ul>
+
+            {% for error in form.non_field_errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+
+        </ul>
+    </div>
+
+    {% endif %}
+
+    <div class="form-group col-6 offset-md-3">
+        <button type="submit" class="btn btn-primary">Insert record</button>
+    </div>
+
+</form>
+
+{% endblock %}
