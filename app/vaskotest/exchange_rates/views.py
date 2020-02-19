@@ -1,17 +1,15 @@
 from django.shortcuts import render, get_list_or_404, redirect
 from django.views.generic import View
 from .forms import ExchangeRateForm
-from django.http import HttpResponseRedirect, HttpResponseNotFound
+from django.http import HttpResponseNotFound
 import datetime
 
 from .models import ExchangeRate
 
 
 def currency_list(request):
-    currencies = []
     distinct = ExchangeRate.objects.order_by().values('currency').distinct()
-    for _ in distinct:
-        currencies.append(ExchangeRate.objects.filter(currency=_['currency']).latest())
+    currencies = [ExchangeRate.objects.filter(currency=_['currency']).latest() for _ in distinct]
 
     return render(request, 'exchange_rates/currency_list.html', context={'currencies': currencies})
 
@@ -30,32 +28,29 @@ def filter_records(initial, ratio):
         return ExchangeRate.objects.filter(currency=initial.currency,
                                            start_date__lt=initial.start_date)
     else:
-        raise Exception('There is no such ratio')
+        raise ExchangeRate.DoesNotExist('There is no such ratio')
 
 
 def delete_record(request, slug, start_date):
-    if request.method == "POST":
-        try:
-            record = ExchangeRate.objects.get(currency=slug, start_date=start_date)
-            if filter_records(record, 'lt').count():
-                lt = filter_records(record, 'lt').latest()
+    try:
+        record = ExchangeRate.objects.get(currency=slug, start_date=start_date)
+        if filter_records(record, 'lt').exists():
+            lt = filter_records(record, 'lt').latest()
 
-                if filter_records(record, 'gt').count():
-                    gt = filter_records(record, 'gt').earliest()
-                    lt.end_date = datetime.datetime.strptime(str(gt.start_date),
-                                                             '%Y-%m-%d') - datetime.timedelta(days=1)
-                else:
-                    lt.end_date = None
-                lt.save(update_fields=['end_date'])
+            if filter_records(record, 'gt').exists():
+                gt = filter_records(record, 'gt').earliest()
+                lt.end_date = datetime.datetime.strptime(str(gt.start_date),
+                                                         '%Y-%m-%d') - datetime.timedelta(days=1)
+            else:
+                lt.end_date = None
+            lt.save(update_fields=['end_date'])
 
-            record.delete()
+        record.delete()
 
-            return HttpResponseRedirect("/exchange_rates/currency/{}".format(slug))
+        return redirect("/exchange_rates/currency/{}".format(slug))
 
-        except ExchangeRate.DoesNotExist:
-            return HttpResponseNotFound("<h2>Record not found</h2>")
-
-    return HttpResponseRedirect("/exchange_rates/currency/{}".format(slug))
+    except ExchangeRate.DoesNotExist:
+        return HttpResponseNotFound("<h2>Record not found</h2>")
 
 
 class CurrencyCreate(View):
@@ -70,13 +65,13 @@ class CurrencyCreate(View):
         if bound_form.is_valid():
             new_record = bound_form.save()
 
-            if filter_records(new_record, 'lt').count():
+            if filter_records(new_record, 'lt').exists():
                 lt = filter_records(new_record, 'lt').latest()
                 lt.end_date = datetime.datetime.strptime(str(new_record.start_date), '%Y-%m-%d') - datetime.timedelta(
                     days=1)
                 lt.save(update_fields=['end_date'])
 
-            if filter_records(new_record, 'gt').count():
+            if filter_records(new_record, 'gt').exists():
                 gt = filter_records(new_record, 'gt').earliest()
                 new_record.end_date = datetime.datetime.strptime(str(gt.start_date), '%Y-%m-%d') - datetime.timedelta(
                     days=1)

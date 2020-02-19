@@ -30,7 +30,7 @@
         <td>{{ record.purchase }}</td>
         <td>{{ record.selling }}</td>
         <td>
-            <form action="/exchange_rates/delete/{{ slug }}/{{ record.start_date | date:'Y-m-d' }}/" method="post">
+            <form action="/exchange_rates/delete/{{ slug }}/{{ record.start_date | date:'Y-m-d' }}/">
                 {% csrf_token %}
                 <button type="submit" class="btn-outline-secondary">Delete record</button>
             </form>
