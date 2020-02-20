@@ -38,7 +38,7 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
-        coverage run --source='.' manage.py test
+        coverage run --source='./app/vaskotest' manage.py test
         coverage report
         codecov -t $CODECOV_TOKEN
 
