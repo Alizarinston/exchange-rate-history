@@ -41,5 +41,5 @@ jobs:
       run: |
         coverage run --source='.' manage.py test
         coverage report
-        codecov $CODECOV_TOKEN
+        codecov --token $CODECOV_TOKEN
 
