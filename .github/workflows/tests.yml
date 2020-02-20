@@ -24,6 +24,7 @@ jobs:
         pip install -r requirements.txt
     
     - name: Install coverage and codecov
+      working-directory: ./app/vaskotest
       run: |
         pip install coverage
         pip install codecov
@@ -38,7 +39,7 @@ jobs:
       env:
         CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
       run: |
-        coverage run --source='./app/vaskotest' manage.py test
+        coverage run --source='.' manage.py test
         coverage report
         codecov -t $CODECOV_TOKEN
 
